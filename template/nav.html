@@ -1,0 +1,126 @@
+{% load static %}
+{% block content %}
+{% block extra_css %}
+<style>
+    /* Navbar professional + compact style */
+    .navbar {
+        background: linear-gradient(to right, black, #3f3dc7);
+        padding: 0.3rem 1rem;
+        margin-bottom: 90px;
+    }
+
+    .navbar-brand, .navbar-nav .nav-link {
+        color: #fff !important;
+        font-weight: 500;
+    }
+
+    .navbar-brand:hover {
+        color: #ffd700 !important;
+        transition: color 0.3s ease-in-out;
+    }
+
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .navbar-brand img {
+        height: 40px;
+        width: auto;
+    }
+
+    .navbar-brand span {
+        font-size: 1.2rem;
+        font-weight: bold;
+        line-height: 1;
+    }
+
+    /* User block styling */
+    .user-block {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff !important;
+        text-align: center;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .user-block:hover {
+        color: #ffd700 !important;
+    }
+
+    .user-icon {
+        font-size: 1.5rem;
+        margin-right: 5px;
+    }
+
+    .user-text {
+        font-size: 0.9rem;
+        line-height: 1;
+    }
+
+    /* Adjust popover buttons */
+    .popover .btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    .popover .btn:last-child {
+        margin-bottom: 0;
+    }
+</style>
+{% endblock extra_css %}
+
+
+<nav class="navbar fixed-top shadow-sm">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    <a class="navbar-brand" href="{% url 'staff' %}">
+      <img src="{% static 'images/JB_Hospital.png' %}" alt="JB Hospital Logo">
+      <span>JB HOSPITAL</span>
+    </a>
+
+    <ul class="navbar-nav flex-row align-items-center mb-0">
+      {% if request.session.staff_id %}
+      <li class="nav-item">
+        <div class="user-block" id="popoverStaff" data-bs-toggle="popover" data-bs-html="true"
+             data-bs-content='
+            <a href="{% url "staff_account" %}" class="btn btn-primary btn-sm w-100 mb-2">My Account</a>
+             <a href="{% url "today_appointments" %}" class="btn btn-primary btn-sm w-100 mb-2">Appointments</a>
+             <a href="{% url "appointment_records" %}" class="btn btn-primary btn-sm w-100 mb-2">Records</a>
+             <a href="{% url "staff_logout" %}" class="btn btn-danger btn-sm w-100">Logout</a>
+             '>
+          <i class="bi bi-person-circle user-icon"></i>
+          <span class="user-text">{{ request.session.staff_name }}</span>
+        </div>
+      </li>
+      {% else %}
+      <li class="nav-item">
+        <a href="{% url 'staff_login' %}" class="nav-link user-block">
+          <i class="bi bi-person-circle user-icon"></i>
+          <span class="user-text">Login</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  var el = document.getElementById('popoverStaff');
+  if(el){
+    var popover = new bootstrap.Popover(el, { placement: 'bottom', trigger: 'click', sanitize: false });
+    document.addEventListener('click', function(e){
+      if(!el.contains(e.target) && !document.querySelector('.popover')?.contains(e.target)){
+        popover.hide();
+      }
+    });
+  }
+});
+</script>
+
+{% endblock extra_js %}
+{% endblock content %}

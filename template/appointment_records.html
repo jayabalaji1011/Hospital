@@ -1,0 +1,150 @@
+{% extends 'index.html' %}
+{% load static %}
+{% block title %}
+Appointment Records
+{% endblock title %}
+{% block content %}
+{% block extra_css %}
+<style>
+.container { margin-top: 8%; }
+
+@media (max-width: 576px) {
+    .container{
+        margin-top: 25%;
+    }
+}
+
+.search-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.search-filter-bar input {
+    flex: 1;
+}
+.search-filter-bar button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-dropdown {
+    position: relative;
+}
+.filter-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    width: 220px;
+}
+.filter-menu.active { display: block; }
+
+
+.table-responsive { overflow-x: auto; }
+
+.table tbody td {
+    display: table-cell !important;
+}
+.table tbody tr {
+    display: table-row !important;
+    border: 1px solid #dee2e6;
+    border-radius: 0;
+    box-shadow: none;
+}
+.table thead { display: table-header-group !important; }
+
+</style>
+{% endblock extra_css %}
+
+<div class="container ">
+  <h2 class="mb-4 text-center">Appointment Records</h2>
+
+  <!-- Search & Filter -->
+  <form method="get" class="search-filter-bar">
+    <input type="text" name="search" value="{{ search }}" placeholder="Search by name / mobile" class="form-control">
+
+    <button type="submit" class="btn btn-primary">
+      <i class="bi bi-search"></i> Search
+    </button>
+
+    <div class="filter-dropdown">
+      <button type="button" class="btn btn-outline-secondary" id="filterToggle">
+        <i class="bi bi-funnel"></i> Filter
+      </button>
+      <div class="filter-menu" id="filterMenu">
+        <div class="mb-2">
+          <label class="form-label">Specialist</label>
+          <select name="specialist" class="form-control">
+            <option value="">All Specialists</option>
+            {% for value, label in specialist_choices %}
+              <option value="{{ value }}" {% if specialist == value %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Apply Filter</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Data Table -->
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover text-center align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Mobile</th>
+          <th>Consulted By</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Booked On</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in appointments %}
+        <tr>
+          <td> {{ forloop.counter }} </td>
+          <td> {{ a.name }} </td>
+          <td> {{ a.phone }} </td>
+          <td> {{ a.get_specialist_display }} </td>
+          <td> {{ a.appointment_date }} </td>
+          <td> {{ a.get_time_slot_display }} </td>
+          <td> {{ a.created_at|date:"M d, Y H:i" }} </td>
+          <td> {{ a.status }} </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center">No records found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const filterToggle = document.getElementById("filterToggle");
+  const filterMenu = document.getElementById("filterMenu");
+
+  filterToggle.addEventListener("click", function() {
+    filterMenu.classList.toggle("active");
+  });
+
+  document.addEventListener("click", function(e) {
+    if (!filterToggle.contains(e.target) && !filterMenu.contains(e.target)) {
+      filterMenu.classList.remove("active");
+    }
+  });
+});
+</script>
+{% endblock content %}

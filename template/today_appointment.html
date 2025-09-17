@@ -1,0 +1,307 @@
+{% extends 'index.html' %}
+{% load static %}
+{% block title %}
+Today Appointments
+{% endblock title %}
+{% block content %}
+{% block extra_css %}
+<style>
+    .container {
+        margin-top: 7%;
+    }
+
+    @media (max-width: 576px) {
+        .container {
+            margin-top: 25%;
+        }
+    }
+
+    /* Search bar + Filter dropdown */
+    .search-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+        align-items: center;
+    }
+
+    .search-bar input {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .filter-dropdown {
+        position: relative;
+    }
+
+    .filter-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        width: 220px;
+    }
+
+    .filter-menu.active {
+        display: block;
+    }
+
+    /* Table responsive */
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    /* Buttons in search bar */
+    .search-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* Appointment Modal Styling */
+    .modal-dialog {
+        max-width: 600px;
+        width: 100%;
+        margin: auto;
+    }
+
+    .modal-content {
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .modal {
+        margin-top: 2%;
+    }
+
+    @media (max-width: 576px) {
+        .modal {
+            margin-top: 8%;
+        }
+    }
+
+    .modal-body {
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+        .form-message-container {
+        position: fixed;
+        top: 90%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1050;
+        width: auto;
+        max-width: 400px;
+        text-align: center;
+    }
+
+    .form-message {
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: 500;
+        color: #fff;
+        margin-bottom: 10px;
+        opacity: 1;
+        transition: opacity 0.5s;
+    }
+
+    .form-message.success {
+        background-color: #28a745;
+    }
+
+    .form-message.error {
+        background-color: #dc3545;
+    }
+</style>
+{% endblock extra_css %}
+
+<div class="container">
+    <h2 class="mb-4 text-center">Today Appointments</h2>
+
+    <!-- Search & Filter -->
+    <form method="get" class="mb-3">
+        <div class="search-bar">
+            <input type="text" name="search" value="{{ search }}" placeholder="Search by name / mobile"
+                class="form-control">
+
+            <!-- Filter dropdown -->
+            <div class="filter-dropdown">
+                <button type="button" class="btn btn-outline-secondary" id="filterToggle">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+                <div class="filter-menu" id="filterMenu">
+                    <div class="mb-2">
+                        <label class="form-label">Specialist</label>
+                        <select name="specialist" class="form-control">
+                            <option value="">All Specialists</option>
+                            {% for value, label in specialist_choices %}
+                            <option value="{{ value }}" {% if specialist == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary w-100">Apply Filter</button>
+                </div>
+            </div>
+
+            <!-- Search and Add -->
+            <div class="search-actions">
+                <button type="submit" class="btn btn-primary d-flex align-items-center">
+                    <i class="bi bi-search me-1"></i> Search
+                </button>
+                <!-- Open modal instead of link -->
+                <button type="button" class="btn btn-success d-flex align-items-center" data-bs-toggle="modal"
+                    data-bs-target="#appointmentsModal">
+                    <i class="bi bi-plus-lg me-1"></i> Add
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Data Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover text-center align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Consulting For</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Booked On</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in appointments %}
+                <tr data-bs-toggle="modal" data-bs-target="#visitModal{{ a.id }}" style="cursor: pointer;">
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ a.name }}</td>
+                    <td>{{ a.phone }}</td>
+                    <td>{{ a.get_specialist_display }}</td>
+                    <td>{{ a.appointment_date }}</td>
+                    <td>{{ a.get_time_slot_display }}</td>
+                    <td>{{ a.created_at|date:"M d, Y H:i" }}</td>
+                </tr>
+
+                <!-- Visit Status Modal -->
+                <div class="modal fade" id="visitModal{{ a.id }}" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="appointment_id" value="{{ a.id }}">
+                                <div class="modal-header bg-primary text-white">
+                                    <h5 class="modal-title">Update Visit Status</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <p>Did <b>{{ a.name }}</b> visit the doctor?</p>
+                                    <button type="submit" name="action" value="visited" class="btn btn-success">
+                                        Yes</button>
+                                    <button type="submit" name="action" value="not_visited" class="btn btn-danger">
+                                        No</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">No records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+  <!-- Message popup -->
+                    {% if messages %}
+                    <div class="form-message-container">
+                        {% for message in messages %}
+                        <div class="form-message {{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+
+<!-- Appointment Booking Modal -->
+<div class="modal fade" id="appointmentsModal" tabindex="-1" aria-labelledby="appointmentsModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="appointmentsModalLabel">Book Appointment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form method="post" novalidate action="{% url 'today_appointments' %}">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">{{ form.name.label_tag }} {{ form.name }}</div>
+                        <div class="col-md-6 mb-3">{{ form.age.label_tag }} {{ form.age }}</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">{{ form.phone.label_tag }} {{ form.phone }}</div>
+                        <div class="col-md-6 mb-3">{{ form.gender.label_tag }} {{ form.gender }}</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">{{ form.specialist.label_tag }} {{ form.specialist }}</div>
+                        <div class="col-md-6 mb-3">{{ form.appointment_date.label_tag }} {{ form.appointment_date }}</div>
+                    </div>
+
+                    <div class="mb-3">{{ form.time_slot.label_tag }} {{ form.time_slot }}</div>
+
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-success w-100 py-2">Confirm Appointment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const filterToggle = document.getElementById("filterToggle");
+    const filterMenu = document.getElementById("filterMenu");
+
+    filterToggle.addEventListener("click", function () {
+        filterMenu.classList.toggle("active");
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!filterToggle.contains(e.target) && !filterMenu.contains(e.target)) {
+            filterMenu.classList.remove("active");
+        }
+    });
+});
+
+       //Messages
+   document.addEventListener("DOMContentLoaded", function () {
+    const successMsgs = document.querySelectorAll('.form-message.success');
+    successMsgs.forEach(msg => {
+      // Optional: fade out
+      setTimeout(() => {
+        msg.style.transition = 'opacity 0.5s';
+        msg.style.opacity = '0';
+        setTimeout(() => { msg.style.display = 'none'; }, 500);
+      }, 2000); // 2 seconds before fade
+    });
+  });
+</script>
+
+{% endblock content %}

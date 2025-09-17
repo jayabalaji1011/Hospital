@@ -1,0 +1,262 @@
+{% load static %}
+{% block content %}
+{% block extra_css %}
+<style>
+    #home {
+        margin-top: 50px;
+    }
+
+    @media (max-width: 576px) {
+        #home {
+            margin-top: 100px;
+        }
+    }
+
+    /* Section */
+    #home h1 {
+        white-space: nowrap;
+        font-size: 2.2rem;
+    }
+
+    @media (max-width: 991px) {
+        #home h1 {
+            font-size: 2rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        #home h1 {
+            font-size: 1.6rem;
+        }
+    }
+
+
+    /* Adjust modal width for mobile */
+    @media (max-width: 576px) {
+        #loginRequiredModal .modal-dialog {
+            max-width: 90%;
+        }
+
+        #loginRequiredModal .modal-body p {
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        #loginRequiredModal .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        #loginRequiredModal .btn:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        #home h1 {
+            font-size: 2rem;
+        }
+
+        #about h2 {
+            font-size: 2rem;
+        }
+
+        #about p {
+            font-size: 1rem;
+        }
+    }
+
+    /* Cards */
+    .card {
+        border: none;
+        box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    /* Footer */
+    .footer-contact {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 5px;
+    }
+
+    .footer-contact span::after {
+        content: " |";
+    }
+
+    .footer-contact span:last-child::after {
+        content: "";
+    }
+
+    @media (max-width: 576px) {
+        .footer-contact {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .footer-contact span::after {
+            content: "";
+        }
+    }
+
+    .form-message-container {
+        position: fixed;
+        top: 90%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1050;
+        width: auto;
+        max-width: 400px;
+        text-align: center;
+    }
+
+    .form-message {
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: 500;
+        color: #fff;
+        margin-bottom: 10px;
+        opacity: 1;
+        transition: opacity 0.5s;
+    }
+
+    .form-message.success {
+        background-color: #28a745;
+    }
+
+    .form-message.error {
+        background-color: #dc3545;
+    }
+</style>
+{% endblock extra_css %}
+
+<!-- Section -->
+<section id="home" class="container py-2">
+    <div class="row align-items-center">
+        <div class="col-md-6 col-lg-7 text-center text-md-start">
+            <h1 class="display-5 fw-bold">Welcome to JB Hospital</h1>
+            <p class="lead">Professional healthcare with experienced doctors.</p>
+            {% if request.session.user_id %}
+            <button class="btn btn-primary btn-lg mt-3" data-bs-toggle="modal" data-bs-target="#appointmentModal">
+                Book Appointment
+            </button>
+            {% else %}
+            <button class="btn btn-primary btn-lg mt-3" data-bs-toggle="modal" data-bs-target="#loginRequiredModal">
+                Book Appointment
+            </button>
+            {% endif %}
+        </div>
+        <div class="col-md-6 col-lg-5 text-center">
+            <img src="{% static 'images/JB_Hospital.png' %}" class="img-fluid rounded" alt="Hospital Image">
+        </div>
+    </div>
+</section>
+
+<!-- About -->
+<section id="about" class="container my-0">
+    <h2 class="text-center mb-3">About JB Hospital</h2>
+    <p class="text-center px-3">
+        Dedicated to modern healthcare with experienced doctors and caring staff.
+    </p>
+</section>
+
+<!-- Services -->
+<section id="services" class="container my-5">
+    <h2 class="text-center mb-4">Our Services</h2>
+    <div class="row g-4 text-center">
+        <div class="col-sm-6 col-md-4">
+            <div class="card h-100 p-3">
+                <img src="{% static 'images/general.jpg' %}" class="mx-auto mb-3 w-100 h-100" style="width:70px;">
+                <div class="card-body">
+                    <h5 class="card-title">General Checkup</h5>
+                    <p class="card-text">Routine health checkups for adults and children.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+            <div class="card h-100 p-3">
+                <img src="{% static 'images/treatement.jpg' %}" class="mx-auto mb-3 w-100 h-100" style="width:70px;">
+                <div class="card-body">
+                    <h5 class="card-title">Emergency Care</h5>
+                    <p class="card-text">Emergency services with expert doctors.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+            <div class="card h-100 p-3">
+                <img src="{% static 'images/specialist.jpg' %}" class="mx-auto mb-3 w-100 h-100" style="width:70px;">
+                <div class="card-body">
+                    <h5 class="card-title">Specialist Consultation</h5>
+                    <p class="card-text">Heart, orthopedics, neurology, and more.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact -->
+<section id="contact" class="container my-5">
+    <h2 class="text-center mb-4">Contact Us</h2>
+    <p class="text-center">123 Main Street, Your City, State</p>
+    <div class="footer-contact">
+        <span>Phone: +91 12345 67890</span>
+        <span>Email: jbcare@gmail.com</span>
+    </div>
+</section>
+
+<!-- Appointment Modal -->
+{% include "appointment.html" %}
+
+  <!-- Message popup -->
+                    {% if messages %}
+                    <div class="form-message-container">
+                        {% for message in messages %}
+                        <div class="form-message {{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+<div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-success shadow-sm">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="loginRequiredLabel">Please Login</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <p class="mb-4">You need to login or register to book an appointment.</p>
+                <a href="{% url 'login_view' %}" class="btn btn-primary me-2">Login</a>
+                <a href="{% url 'register_view' %}" class="btn btn-success">Register</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-center text-white py-3 mt-4">
+    &copy; 2025 JB Hospital. All Rights Reserved.
+</footer>
+
+<script>
+       //Messages
+   document.addEventListener("DOMContentLoaded", function () {
+    const successMsgs = document.querySelectorAll('.form-message.success');
+    successMsgs.forEach(msg => {
+      setTimeout(() => {
+        msg.style.transition = 'opacity 0.5s';
+        msg.style.opacity = '0';
+        setTimeout(() => { msg.style.display = 'none'; }, 500);
+      }, 2000); 
+    });
+  });
+</script>
+{% endblock content %}

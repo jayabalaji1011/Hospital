@@ -1,0 +1,53 @@
+{% extends "index.html" %}
+{% load static %}
+{% block title %}
+My Appointments
+{% endblock title %}
+{% block content %}
+{% block extra_css %}
+<style>
+    .container {
+        margin-top: 7%;
+    }
+
+    @media (max-width: 576px) {
+        .container {
+            margin-top: 25%;
+        }
+    }
+</style>
+{% endblock extra_css %}
+
+<div class="container">
+    <h2 class="mb-4 mt-5 text-center">My Appointments</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Consulted By</th>
+                    <th>Date</th>
+                    <th>Time Slot</th>
+                    <th>Booked On</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in appointments %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ appointment.get_specialist_display }}</td>
+                    <td>{{ appointment.appointment_date }}</td>
+                    <td>{{ appointment.get_time_slot_display }}</td>
+                    <td>{{ appointment.created_at|date:"M d, Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No appointments found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

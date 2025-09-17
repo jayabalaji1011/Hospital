@@ -1,0 +1,112 @@
+{% extends 'index.html' %}
+{% load static %}
+{% block title %}
+Account Registration
+{% endblock title %}
+{% block content %}
+{% block extra_css %}
+<style>
+  .card {
+    margin-top: 120px;
+    border-radius: 12px;
+  }
+
+  @media (max-width: 576px) {
+    .card {
+      margin: 1rem;
+      margin-top: 120px;
+    }
+  }
+
+  /* Message */
+  .form-message-container {
+    min-height: 24px;
+    text-align: center;
+    margin-bottom: 5px;
+  }
+
+  .form-message {
+    font-weight: 500;
+  }
+
+  .form-message.error {
+    color: #dc3545;
+  }
+
+  .form-message.success {
+    color: #28a745;
+  }
+</style>
+{% endblock extra_css %}
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-12">
+      <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white text-center">
+          <h4>Register</h4>
+        </div>
+        <div class="card-body">
+
+
+          <!-- Message -->
+           <div class="form-message-container">
+          {% if form.errors %}
+          <div class="form-message-container">
+            {% for field in form %}
+            {% for error in field.errors %}
+            <div class="form-message error">{{ error }}</div>
+            {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+            <div class="form-message error">{{ error }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          </div>
+
+          <form method="post" action="{% url 'register_view' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              {{ form.name.label_tag }}
+              {{ form.name }}
+            </div>
+            <div class="mb-3">
+              {{ form.mobile.label_tag }}
+              {{ form.mobile }}
+            </div>
+            <div class="mb-3">
+              {{ form.password.label_tag }}
+              {{ form.password }}
+            </div>
+            <div class="mb-3">
+              {{ form.confirm_password.label_tag }}
+              {{ form.confirm_password }}
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-2">Register</button>
+          </form>
+        </div>
+        <div class="card-footer text-center">
+          <small>Already have an account? <a href="{% url 'login_view' %}">Login</a></small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JS for auto-hide messages -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const successMsgs = document.querySelectorAll('.form-message.success');
+    successMsgs.forEach(msg => {
+      // Optional: fade out
+      setTimeout(() => {
+        msg.style.transition = 'opacity 0.5s';
+        msg.style.opacity = '0';
+        setTimeout(() => { msg.style.display = 'none'; }, 500);
+      }, 2000); // 2 seconds before fade
+    });
+  });
+</script>
+
+{% endblock content %}

@@ -1,0 +1,100 @@
+{% extends 'index.html' %}
+{% load static %}
+{% block title %}
+Appointment Booking
+{% endblock title %}
+{% block content %}
+{% block extra_css %}
+<style>
+    .modal-dialog {
+        max-width: 600px; 
+        width: 100%;
+        margin: auto;
+    }
+
+    .modal-content {
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .modal {
+        margin-top: 2%;
+    }
+
+    @media (max-width: 576px) {
+        .modal {
+            margin-top: 8%;
+        }
+    }
+
+    .modal-body {
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+</style>
+{% endblock extra_css %}
+
+<!-- Appointment Modal -->
+<div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold" id="appointmentModalLabel">Book Appointment</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body p-4">
+
+        <form method="post" novalidate action="{% url 'home' %}">
+          {% csrf_token %}
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.name.label_tag }}
+              {{ form.name }}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.age.label_tag }}
+              {{ form.age }}
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.phone.label_tag }}
+              {{ form.phone }}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.gender.label_tag }}
+              {{ form.gender }}
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.specialist.label_tag }}
+              {{ form.specialist }}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.appointment_date.label_tag }}
+              {{ form.appointment_date }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            {{ form.time_slot.label_tag }}
+            {{ form.time_slot }}
+          </div>
+
+          <!-- Submit -->
+          <div class="text-center mt-4">
+            <button type="submit" class="btn btn-success w-100 py-2">
+              Confirm Appointment
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
