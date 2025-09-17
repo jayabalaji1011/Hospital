@@ -16,7 +16,6 @@ path = '/home/jayabalaji1011/hospital'
 if path not in sys.path:
     sys.path.append(path)
 
-# Point to your settings module (use correct case)
 os.environ['DJANGO_SETTINGS_MODULE'] = 'Hospital.settings'
 
 from django.core.wsgi import get_wsgi_application
