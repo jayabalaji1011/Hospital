@@ -11,15 +11,13 @@ import os
 import sys
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Hospital.settings')
-
-
-
+# Add your project path
 path = '/home/jayabalaji1011/hospital'
 if path not in sys.path:
     sys.path.append(path)
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'hospital.settings'
+# Point to your settings module (use correct case)
+os.environ['DJANGO_SETTINGS_MODULE'] = 'Hospital.settings'
 
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
