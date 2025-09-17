@@ -35,5 +35,5 @@
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/<your-username>/hospital-project.git
-cd hospital-project
+git clone https://github.com/<your-username>/Hospital.git
+cd Hospital
