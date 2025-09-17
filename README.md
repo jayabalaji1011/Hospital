@@ -14,7 +14,7 @@
 ### Patient Appointment Management
 - Patients can **book appointments** with doctors.
 - Patients can **cancel their own appointments** after booking.
-- Admin can **update visit status** (`visited` / `not_visited`) and **delete any appointment**.
+- Management and Admin can **update visit status** (`visited` / `not_visited`) and **delete any appointment**.
 - **Search and filter** appointments by patient name, phone number, or specialist.
 
 ### User Experience
