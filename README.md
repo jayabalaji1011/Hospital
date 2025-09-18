@@ -1,7 +1,7 @@
 #  Hospital Appointment Booking System
 
 ## Overview
-**JB Hospital Management System** is a Django-based web application designed to manage hospital operations efficiently. The system handles staff and patient accounts, appointments, and provides a responsive interface with role-based permissions.
+**Hospital Appointment Booking System** is a Django-based web application designed to manage hospital Appointments Booking efficiently. The system handles staff and patient accounts, appointments, and provides a responsive interface with role-based permissions.
 
 ---
 
@@ -14,7 +14,7 @@
 ### Patient Appointment Management
 - Patients can **book appointments** with doctors.
 - Patients can **cancel their own appointments** after booking.
-- Management and Admin can **update visit status** (`visited` / `not_visited`) and **delete any appointment**.
+- Management and Admin can **update visit status** (`visited` / `not_visited`).
 - **Search and filter** appointments by patient name, phone number, or specialist.
 
 ### User Experience
@@ -35,5 +35,5 @@
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/<your-username>/Hospital.git
+git clone https://github.com/<jayabalaji1011>/Hospital.git
 cd Hospital
