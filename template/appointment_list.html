@@ -1,5 +1,6 @@
 {% extends "index.html" %}
 {% load static %}
+
 {% block title %}
 My Appointments
 {% endblock title %}
@@ -10,18 +11,75 @@ My Appointments
         margin-top: 7%;
     }
 
+    .d-flex {
+        justify-content: end;
+    }
+
     @media (max-width: 576px) {
         .container {
             margin-top: 25%;
         }
+
+        .d-flex {
+            justify-content: center;
+        }
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+
+    .form-message-container {
+        position: fixed;
+        top: 90%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1050;
+        width: auto;
+        max-width: 400px;
+        text-align: center;
+    }
+
+    .form-message {
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: 500;
+        color: #fff;
+        margin-bottom: 10px;
+        opacity: 1;
+        transition: opacity 0.5s;
+    }
+
+    .form-message.success {
+        background-color: #28a745;
+    }
+
+    .form-message.error {
+        background-color: #dc3545;
     }
 </style>
 {% endblock extra_css %}
-
 <div class="container">
     <h2 class="mb-4 mt-5 text-center">My Appointments</h2>
+    <div class="mb-2 d-flex">
+        <a href="{% url 'home' %}"><button type="button" class="btn btn-primary d-flex align-items-center">
+                <i class="bi bi-house me-1"></i> Home
+            </button>
+        </a>
+    </div>
 
     <div class="table-responsive">
+        <!-- Message popup -->
+       <div class="form-message-container">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="form-message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+              {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+          </div>
         <table class="table table-bordered table-striped align-middle text-center">
             <thead class="table-dark">
                 <tr>
@@ -29,18 +87,53 @@ My Appointments
                     <th>Consulted By</th>
                     <th>Date</th>
                     <th>Time Slot</th>
-                    <th>Booked On</th>
+                    <th>Shedule</th>
                 </tr>
             </thead>
             <tbody>
                 {% for appointment in appointments %}
-                <tr>
+                <tr data-bs-toggle="modal" data-bs-target="#appointmentModal{{ appointment.id }}"
+                    style="cursor: pointer;">
                     <td>{{ forloop.counter }}</td>
                     <td>{{ appointment.get_specialist_display }}</td>
                     <td>{{ appointment.appointment_date }}</td>
                     <td>{{ appointment.get_time_slot_display }}</td>
-                    <td>{{ appointment.created_at|date:"M d, Y H:i" }}</td>
+                    <td>{{ appointment.consultation_time}}</td>
                 </tr>
+
+                <!-- Modal for each appointment -->
+                <div class="modal fade" id="appointmentModal{{ appointment.id }}" tabindex="-1"
+                    aria-labelledby="appointmentModalLabel{{ appointment.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="appointmentModalLabel{{ appointment.id }}">
+                                    Appointment Details
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-start">
+                                <p><strong>Consulted By:</strong> {{ appointment.get_specialist_display }}</p>
+                                <p><strong>Date:</strong> {{ appointment.appointment_date }}</p>
+                                <p><strong>Time Slot:</strong> {{ appointment.get_time_slot_display }}</p>
+                                <p><strong>Booked On:</strong> {{ appointment.created_at|date:"M d, Y H:i" }}</p>
+                            </div>
+                            <div class="modal-footer d-flex justify-content-center">
+                                {% if appointment.cancellable %}
+                                <form method="POST" action="{% url 'cancel_appointment' appointment.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">Cancel Appointment</button>
+                                </form>
+                                {% else %}
+                                <button type="button" class="btn btn-secondary" disabled>
+                                    Cancellation Not Allowed
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% empty %}
                 <tr>
                     <td colspan="5" class="text-center">No appointments found.</td>
@@ -50,4 +143,33 @@ My Appointments
         </table>
     </div>
 </div>
+
+
+<script>
+    //Messages
+    document.addEventListener("DOMContentLoaded", function () {
+        const successMsgs = document.querySelectorAll('.form-message.success');
+        successMsgs.forEach(msg => {
+            // Optional: fade out
+            setTimeout(() => {
+                msg.style.transition = 'opacity 0.5s';
+                msg.style.opacity = '0';
+                setTimeout(() => { msg.style.display = 'none'; }, 500);
+            }, 2000);
+        });
+    });
+</script>
 {% endblock %}
+
+
+
+.table tbody td {
+    display: table-cell !important;
+}
+.table tbody tr {
+    display: table-row !important;
+    border: 1px solid #dee2e6;
+    border-radius: 0;
+    box-shadow: none;
+}
+.table thead { display: table-header-group !important; }

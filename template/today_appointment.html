@@ -64,6 +64,13 @@ Today Appointments
         flex-wrap: wrap;
     }
 
+    .back{
+        text-decoration: none;
+
+    }
+
+    
+
     /* Appointment Modal Styling */
     .modal-dialog {
         max-width: 600px;
@@ -157,10 +164,10 @@ Today Appointments
                     <i class="bi bi-search me-1"></i> Search
                 </button>
                 <!-- Open modal instead of link -->
-                <button type="button" class="btn btn-success d-flex align-items-center" data-bs-toggle="modal"
-                    data-bs-target="#appointmentsModal">
-                    <i class="bi bi-plus-lg me-1"></i> Add
+                <a href="{% url 'staff' %}" class="back"><button type="button" class="btn btn-success d-flex align-items-center">
+                    <i class="bi bi-house me-1"></i> Home
                 </button>
+                </a>
             </div>
         </div>
     </form>
@@ -176,7 +183,7 @@ Today Appointments
                     <th>Consulting For</th>
                     <th>Date</th>
                     <th>Time</th>
-                    <th>Booked On</th>
+                    <th>Schedule</th>
                 </tr>
             </thead>
             <tbody>
@@ -188,7 +195,7 @@ Today Appointments
                     <td>{{ a.get_specialist_display }}</td>
                     <td>{{ a.appointment_date }}</td>
                     <td>{{ a.get_time_slot_display }}</td>
-                    <td>{{ a.created_at|date:"M d, Y H:i" }}</td>
+                    <td>{{ a.consultation_time}}</td>
                 </tr>
 
                 <!-- Visit Status Modal -->
@@ -223,56 +230,16 @@ Today Appointments
     </div>
 </div>
 
-  <!-- Message popup -->
-                    {% if messages %}
-                    <div class="form-message-container">
-                        {% for message in messages %}
-                        <div class="form-message {{ message.tags }}">
-                            {{ message }}
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
-
-<!-- Appointment Booking Modal -->
-<div class="modal fade" id="appointmentsModal" tabindex="-1" aria-labelledby="appointmentsModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold" id="appointmentsModalLabel">Book Appointment</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+     <div class="form-message-container">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="form-message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+              {{ message }}
             </div>
-            <div class="modal-body p-4">
-                <form method="post" novalidate action="{% url 'today_appointments' %}">
-                    {% csrf_token %}
+            {% endfor %}
+            {% endif %}
+          </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">{{ form.name.label_tag }} {{ form.name }}</div>
-                        <div class="col-md-6 mb-3">{{ form.age.label_tag }} {{ form.age }}</div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">{{ form.phone.label_tag }} {{ form.phone }}</div>
-                        <div class="col-md-6 mb-3">{{ form.gender.label_tag }} {{ form.gender }}</div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">{{ form.specialist.label_tag }} {{ form.specialist }}</div>
-                        <div class="col-md-6 mb-3">{{ form.appointment_date.label_tag }} {{ form.appointment_date }}</div>
-                    </div>
-
-                    <div class="mb-3">{{ form.time_slot.label_tag }} {{ form.time_slot }}</div>
-
-                    <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-success w-100 py-2">Confirm Appointment</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -290,18 +257,25 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+const dateInput = document.querySelector('#id_appointment_date');
+const today = new Date().toISOString().split('T')[0];
+dateInput.setAttribute('min', today);
+
+
+
        //Messages
-   document.addEventListener("DOMContentLoaded", function () {
-    const successMsgs = document.querySelectorAll('.form-message.success');
-    successMsgs.forEach(msg => {
-      // Optional: fade out
-      setTimeout(() => {
-        msg.style.transition = 'opacity 0.5s';
-        msg.style.opacity = '0';
-        setTimeout(() => { msg.style.display = 'none'; }, 500);
-      }, 2000); // 2 seconds before fade
+    //Messages
+ document.addEventListener("DOMContentLoaded", function () {
+    const messages = document.querySelectorAll('.form-message');
+    messages.forEach(msg => {
+        setTimeout(() => {
+            msg.style.transition = 'opacity 0.5s';
+            msg.style.opacity = '0';
+            setTimeout(() => { msg.style.display = 'none'; }, 500);
+        }, 2000); // all messages fade after 2 seconds
     });
-  });
+});
+
 </script>
 
 {% endblock content %}

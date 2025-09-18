@@ -49,7 +49,6 @@ Appointment Booking
         <form method="post" novalidate action="{% url 'staff' %}">
           {% csrf_token %}
 
-          <!-- Row 1: Name + Age -->
           <div class="row">
             <div class="col-md-6 mb-3">
               {{ form.name.label_tag }}
@@ -61,7 +60,6 @@ Appointment Booking
             </div>
           </div>
 
-          <!-- Row 2: Phone + Gender -->
           <div class="row">
             <div class="col-md-6 mb-3">
               {{ form.phone.label_tag }}
@@ -73,7 +71,6 @@ Appointment Booking
             </div>
           </div>
 
-          <!-- Row 3: Specialist + Date -->
           <div class="row">
             <div class="col-md-6 mb-3">
               {{ form.specialist.label_tag }}
@@ -85,7 +82,6 @@ Appointment Booking
             </div>
           </div>
 
-          <!-- Row 4: Time Slot (full width) -->
           <div class="mb-3">
             {{ form.time_slot.label_tag }}
             {{ form.time_slot }}
@@ -102,4 +98,10 @@ Appointment Booking
     </div>
   </div>
 </div>
+
+<script>
+const dateInput = document.querySelector('#id_appointment_date');
+const today = new Date().toISOString().split('T')[0];
+dateInput.setAttribute('min', today);
+</script>
 {% endblock content %}

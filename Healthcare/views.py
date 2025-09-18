@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .forms import *
 from .models import *
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import update_session_auth_hash
+from django.utils import timezone
+from datetime import datetime, time,timedelta,date
 from django.contrib.auth.models import User
 from .models import Appointment
 from django.utils.timezone import now
@@ -11,22 +11,84 @@ from django.db.models import Q
 
 
 
+# --- Assign consultation time function ---
+def assign_consultation_time(appointment):
+    # Ensure time_slot is valid
+    if not appointment.time_slot:
+        appointment.time_slot = 'morning'
+
+    slot_start, slot_end = Appointment.slot_timings()[appointment.time_slot]
+    start_datetime = datetime.combine(appointment.appointment_date, slot_start)
+    consult_duration = Appointment.consultation_time_map().get(appointment.specialist, 15)
+
+    existing_appointments = Appointment.objects.filter(
+        appointment_date=appointment.appointment_date,
+        time_slot=appointment.time_slot,
+        specialist=appointment.specialist
+    ).order_by("consultation_time")
+
+    if existing_appointments.exists():
+        last_appointment = existing_appointments.last()
+        last_time = last_appointment.consultation_time or slot_start
+        next_time = datetime.combine(appointment.appointment_date, last_time) + timedelta(minutes=consult_duration)
+    else:
+        next_time = start_datetime
+
+    if next_time.time() >= slot_end:
+        raise ValueError("No slots available for this doctor in this session")
+
+    appointment.consultation_time = next_time.time()
+    return appointment
+
+
 def home(request):
     if request.method == "POST":
         if not request.session.get('user_id'):
+            messages.error(request, "You must login first to book an appointment!")
             return redirect('login_view')
 
         form = AppointmentForm(request.POST)
         if form.is_valid():
             appointment = form.save(commit=False)
-            appointment.patient = CustomUser.objects.get(id=request.session['user_id']) 
+            appointment.patient = CustomUser.objects.get(id=request.session['user_id'])
+
+            # --- ASSIGN CONSULTATION TIME LOGIC ---
+            slot_start, slot_end = Appointment.slot_timings()[appointment.time_slot]
+            duration_minutes = Appointment.consultation_time_map()[appointment.specialist]
+
+            # Get existing appointments for same date, slot, and specialist
+            existing_appointments = Appointment.objects.filter(
+                appointment_date=appointment.appointment_date,
+                time_slot=appointment.time_slot,
+                specialist=appointment.specialist
+            ).order_by('consultation_time')
+
+            if not existing_appointments:
+                next_time = slot_start
+            else:
+                last_appt = existing_appointments.last()
+                if last_appt.consultation_time:
+                    last_time = last_appt.consultation_time
+                else:
+                    last_time = slot_start  # fallback if None
+                # Add specialist consultation duration
+                last_datetime = datetime.combine(date.today(), last_time)
+                next_datetime = last_datetime + timedelta(minutes=duration_minutes)
+                next_time = next_datetime.time()
+
+            # Check if next_time exceeds slot_end
+            if next_time > slot_end:
+                messages.error(request, "No more slots available for this time slot.")
+                return redirect('appointment_list')
+
+            appointment.consultation_time = next_time
             appointment.save()
-            messages.success(request, "Appointment booked successfully!")
-            return redirect("home")
+            messages.success(request, f"Appointment booked successfully at {next_time.strftime('%H:%M')}!")
+            return redirect("appointment_list")
     else:
         form = AppointmentForm()
-    return render(request, "index.html", {"form": form,'show_home':True,'show_navbar':True})
 
+    return render(request, "index.html", {"form": form, 'show_home': True, 'show_navbar': True})
 
 def staff(request):
     if request.method == "POST":
@@ -37,13 +99,47 @@ def staff(request):
         form = AppointmentForm(request.POST)
         if form.is_valid():
             appointment = form.save(commit=False)
-            appointment.staff = StaffUser.objects.get(id=request.session['staff_id'])
+            appointment.patient = CustomUser.objects.get(id=request.session['user_id'])
+
+            # --- ASSIGN CONSULTATION TIME LOGIC ---
+            slot_start, slot_end = Appointment.slot_timings()[appointment.time_slot]
+            duration_minutes = Appointment.consultation_time_map()[appointment.specialist]
+
+            # Get existing appointments for same date, slot, and specialist
+            existing_appointments = Appointment.objects.filter(
+                appointment_date=appointment.appointment_date,
+                time_slot=appointment.time_slot,
+                specialist=appointment.specialist
+            ).order_by('consultation_time')
+
+            if not existing_appointments:
+                next_time = slot_start
+            else:
+                last_appt = existing_appointments.last()
+                if last_appt.consultation_time:
+                    last_time = last_appt.consultation_time
+                else:
+                    last_time = slot_start  # fallback if None
+                # Add specialist consultation duration
+                last_datetime = datetime.combine(date.today(), last_time)
+                next_datetime = last_datetime + timedelta(minutes=duration_minutes)
+                next_time = next_datetime.time()
+
+            # Check if next_time exceeds slot_end
+            if next_time > slot_end:
+                messages.error(request, "No more slots available for this time slot.")
+                return redirect('today_appointments')
+
+            appointment.consultation_time = next_time
             appointment.save()
-            messages.success(request, "Appointment booked successfully!")
-            return redirect("staff")
+            messages.success(request, f"Appointment booked successfully at {next_time.strftime('%H:%M')}!")
+            return redirect("today_appointments")
     else:
         form = AppointmentForm()
-    return render(request, "index.html", {"form": form,'show_staff':True,'show_nav':True})
+
+    return render(request, "index.html", {"form": form, 'show_staff': True, 'show_nav': True})
+
+
 
 
 
@@ -92,13 +188,71 @@ def logout_view(request):
     return redirect('login_view')
 
 
+
 def appointment_list(request):
     if not request.session.get('user_id'):
         messages.error(request, "You must login first to view appointments!")
         return redirect('login_view')
 
-    appointments = Appointment.objects.filter(patient_id=request.session['user_id']).order_by('-appointment_date', '-created_at')
-    return render(request, "appointment_list.html", {"appointments": appointments,'show_navbar':True})
+    appointments = Appointment.objects.filter(
+        patient_id=request.session['user_id']
+    ).order_by('-appointment_date', '-created_at')
+
+    now = timezone.localtime()
+
+    for appt in appointments:
+        # Ensure time_slot exists
+        if not appt.time_slot:
+            appt.cancellable = False
+            continue
+
+        # Get slot end time from model method
+        slot_start, slot_end = Appointment.slot_timings().get(appt.time_slot, (None, None))
+        if not slot_end:
+            appt.cancellable = False
+            continue
+
+        # Cutoff datetime is slot end
+        cutoff = timezone.make_aware(
+            datetime.combine(appt.appointment_date, slot_end),
+            timezone.get_current_timezone()
+        )
+        appt.cancellable = now < cutoff
+
+    return render(request, "appointment_list.html", {
+        "appointments": appointments,
+        "show_navbar": True,
+        "specialist_choices": Appointment.DOCTOR_CHOICES
+    })
+
+
+
+def cancel_appointment(request, appointment_id):
+    if not request.session.get('user_id'):
+        messages.error(request, "You must login first to cancel appointments!")
+        return redirect('login_view')
+
+    appointment = get_object_or_404(Appointment, id=appointment_id, patient_id=request.session['user_id'])
+
+    now = timezone.localtime()
+    if appointment.time_slot == "Morning":
+        cutoff_time = time(8, 0)
+    else:
+        cutoff_time = time(17, 0)
+
+    cutoff = timezone.make_aware(
+        datetime.combine(appointment.appointment_date, cutoff_time),
+        timezone.get_current_timezone()
+    )
+
+    if now < cutoff:
+        appointment.delete()
+        messages.success(request, "Appointment cancelled successfully.")
+    else:
+        messages.error(request, "You cannot cancel past appointments.")
+
+    return redirect('appointment_list')
+
 
 
 
@@ -129,31 +283,47 @@ def appointment_records(request):
 
 
 
+
+
+# --- Today appointments view ---
 def today_appointments(request):
-    form = AppointmentForm(request.POST)
-    if form.is_valid():
-        appointment = form.save(commit=False)
-        appointment.staff = StaffUser.objects.get(id=request.session['staff_id'])
-        appointment.save()
-        messages.success(request, "Appointment booked successfully!")
-        return redirect("today_appointments")
+    if not request.session.get('staff_id'):
+        messages.error(request, "You must login first to book an appointment!")
+        return redirect('staff_login')
+
+    # POST: Add new appointment
+    if request.method == "POST" and "name" in request.POST:
+        form = AppointmentForm(request.POST)
+        if form.is_valid():
+            appointment = form.save(commit=False)
+            appointment.staff = StaffUser.objects.get(id=request.session['staff_id'])
+            try:
+                appointment = assign_consultation_time(appointment)
+                appointment.save()
+                messages.success(
+                    request,
+                    f"Appointment booked successfully! Consultation time: {appointment.consultation_time.strftime('%I:%M %p')}"
+                )
+                return redirect("today_appointments")
+            except ValueError as e:
+                messages.error(request, str(e))
+                return redirect("today_appointments")
     else:
         form = AppointmentForm()
 
+    # GET: Filter & Search
     today = now().date()
     search = request.GET.get('search', '')
     specialist = request.GET.get('specialist', '')
+
     appointments = Appointment.objects.filter(appointment_date=today, status="pending")
-
     if search:
-        appointments = appointments.filter(
-            Q(name__icontains=search) | Q(phone__icontains=search)
-        )
-
+        appointments = appointments.filter(Q(name__icontains=search) | Q(phone__icontains=search))
     if specialist:
         appointments = appointments.filter(specialist=specialist)
 
-    if request.method == "POST":
+    # POST: Update visit status
+    if request.method == "POST" and "appointment_id" in request.POST:
         appointment_id = request.POST.get("appointment_id")
         action = request.POST.get("action") 
         appointment = get_object_or_404(Appointment, id=appointment_id)
@@ -166,7 +336,7 @@ def today_appointments(request):
         "search": search,
         "specialist": specialist,
         "specialist_choices": Appointment.DOCTOR_CHOICES,
-        "form":form,
+        "form": form,
         "show_nav": True,
     })
 

@@ -50,17 +50,6 @@ Appointment Records
 
 .table-responsive { overflow-x: auto; }
 
-.table tbody td {
-    display: table-cell !important;
-}
-.table tbody tr {
-    display: table-row !important;
-    border: 1px solid #dee2e6;
-    border-radius: 0;
-    box-shadow: none;
-}
-.table thead { display: table-header-group !important; }
-
 </style>
 {% endblock extra_css %}
 
@@ -107,7 +96,7 @@ Appointment Records
           <th>Consulted By</th>
           <th>Date</th>
           <th>Time</th>
-          <th>Booked On</th>
+          <th>Schedule</th>
           <th>Status</th>
         </tr>
       </thead>
@@ -120,7 +109,7 @@ Appointment Records
           <td> {{ a.get_specialist_display }} </td>
           <td> {{ a.appointment_date }} </td>
           <td> {{ a.get_time_slot_display }} </td>
-          <td> {{ a.created_at|date:"M d, Y H:i" }} </td>
+          <td> {{ a.consultation_time }} </td>
           <td> {{ a.status }} </td>
         </tr>
         {% empty %}
@@ -148,3 +137,16 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 {% endblock content %}
+
+
+
+.table tbody td {
+    display: table-cell !important;
+}
+.table tbody tr {
+    display: table-row !important;
+    border: 1px solid #dee2e6;
+    border-radius: 0;
+    box-shadow: none;
+}
+.table thead { display: table-header-group !important; }

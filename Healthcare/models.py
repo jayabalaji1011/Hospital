@@ -1,8 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
-from datetime import timedelta
-import datetime
+from datetime import time,timedelta,datetime
+import datetime 
 import os
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import AbstractUser
@@ -51,11 +51,11 @@ class StaffUser(models.Model):
         return f"{self.name} - {self.mobile}"
 
 
-# Appointment Model
+
 class Appointment(models.Model):
-    patient = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
-    staff = models.ForeignKey(StaffUser, on_delete=models.SET_NULL, null=True, blank=True)
-    
+    patient = models.ForeignKey('CustomUser', on_delete=models.SET_NULL, null=True, blank=True)
+    staff = models.ForeignKey('StaffUser', on_delete=models.SET_NULL, null=True, blank=True)
+
     # Patient Info
     name = models.CharField(max_length=100)
     age = models.PositiveIntegerField()
@@ -73,14 +73,17 @@ class Appointment(models.Model):
     ]
     specialist = models.CharField(max_length=50, choices=DOCTOR_CHOICES)
 
-    # Appointment date & time
+    # Appointment date & slot
     appointment_date = models.DateField(default=timezone.now)
     TIME_SLOT_CHOICES = [
-        ('morning', 'Morning (8 AM - 12 PM)'),
-        ('afternoon', 'Afternoon (12 PM - 4 PM)'),
-        ('evening', 'Evening (4 PM - 8 PM)'),
+        ('morning', 'Morning (9 AM - 12 PM)'),
+        ('afternoon', 'Afternoon (1:30 PM - 4 PM)'),
+        ('evening', 'Evening (6 PM - 9 PM)'),
     ]
     time_slot = models.CharField(max_length=20, choices=TIME_SLOT_CHOICES, default='morning')
+
+    # Exact consultation time
+    consultation_time = models.TimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -93,4 +96,26 @@ class Appointment(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.specialist} on {self.appointment_date} ({self.time_slot})"
+
+    # Map specialist to consultation duration in minutes
+    @staticmethod
+    def consultation_time_map():
+        return {
+            'general_physician': 15,
+            'cardiologist': 30,
+            'neurologist': 45,
+            'gastroenterologist': 20,
+            'orthopedic': 20,
+            'dermatologist': 15,
+        }
+
+    # Map slot to start & end time
+    @staticmethod
+    def slot_timings():
+        return {
+            'morning': (time(9, 0), time(12, 0)),
+            'afternoon': (time(13, 30), time(16, 0)),
+            'evening': (time(18, 0), time(21, 0)),
+        }
+
 

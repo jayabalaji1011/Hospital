@@ -1,38 +1,50 @@
 {% extends 'index.html' %}
 {% load static %}
-{% block title %}
-Appointment Booking
-{% endblock title %}
-{% block content %}
+{% block title %} Appointment Booking {% endblock title %}
+
 {% block extra_css %}
 <style>
-    .modal-dialog {
-        max-width: 600px; 
-        width: 100%;
-        margin: auto;
-    }
+  .modal-dialog {
+    max-width: 600px;
+    width: 100%;
+    margin: auto;
+  }
 
-    .modal-content {
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
+  .modal-content {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
 
+  .modal {
+    margin-top: 2%;
+  }
+
+  @media (max-width: 576px) {
     .modal {
-        margin-top: 2%;
+      margin-top: 8%;
     }
+  }
 
-    @media (max-width: 576px) {
-        .modal {
-            margin-top: 8%;
-        }
-    }
-
-    .modal-body {
-        max-height: 85vh;
-        overflow-y: auto;
-    }
+  .modal-body {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
 </style>
 {% endblock extra_css %}
+
+{% block content %}
+
+<!-- Alert messages -->
+{% if messages %}
+<div class="container mt-2">
+  {% for message in messages %}
+  <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
 
 <!-- Appointment Modal -->
 <div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
@@ -44,7 +56,6 @@ Appointment Booking
       </div>
 
       <div class="modal-body p-4">
-
         <form method="post" novalidate action="{% url 'home' %}">
           {% csrf_token %}
 
@@ -86,7 +97,6 @@ Appointment Booking
             {{ form.time_slot }}
           </div>
 
-          <!-- Submit -->
           <div class="text-center mt-4">
             <button type="submit" class="btn btn-success w-100 py-2">
               Confirm Appointment
@@ -97,4 +107,24 @@ Appointment Booking
     </div>
   </div>
 </div>
+<script>
+  const dateInput = document.querySelector('#id_appointment_date');
+  const today = new Date().toISOString().split('T')[0];
+  dateInput.setAttribute('min', today);
+
+
+     //Messages
+    document.addEventListener("DOMContentLoaded", function () {
+        const successMsgs = document.querySelectorAll('.form-message.success');
+        successMsgs.forEach(msg => {
+            // Optional: fade out
+            setTimeout(() => {
+                msg.style.transition = 'opacity 0.5s';
+                msg.style.opacity = '0';
+                setTimeout(() => { msg.style.display = 'none'; }, 500);
+            }, 2000);
+        });
+    });
+</script>
+
 {% endblock content %}

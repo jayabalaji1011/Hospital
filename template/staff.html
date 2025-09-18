@@ -215,15 +215,15 @@
 <!-- Appointment Modal -->
 {% include "staff_booking.html" %}
   <!-- Message popup -->
-                    {% if messages %}
-                    <div class="form-message-container">
-                        {% for message in messages %}
-                        <div class="form-message {{ message.tags }}">
-                            {{ message }}
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
+                   <div class="form-message-container">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="form-message {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+              {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+          </div>
 
 
 
