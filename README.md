@@ -1,7 +1,7 @@
 #  Hospital Appointment Booking System
 
 ## Overview
-**Hospital Appointment Booking System** is a Django-based web application designed to manage hospital Appointments Booking efficiently. The system handles staff and patient accounts, appointments, and provides a responsive interface with role-based permissions.
+**Hospital** is a Django-based web application designed to manage hospital Appointments Booking efficiently. The system handles staff and patient accounts, appointments, and provides a responsive interface with role-based permissions.
 
 ---
 
