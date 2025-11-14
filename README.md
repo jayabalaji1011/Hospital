@@ -31,10 +31,8 @@
 
 ---
 
-## Installation
-
-1. **Clone the repository**
+## Installation 1. **Clone the repository**
 bash
 git clone https://github.com/jayabalaji1011/Hospital.git
-cd Hospital
+cd Hospital 
 
