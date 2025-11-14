@@ -36,5 +36,5 @@
 1. **Clone the repository**
 2. ````bash
 git clone https://github.com/jayabalaji1011/Hospital.git
-cd Hospital 
+cd Hospital````
 
