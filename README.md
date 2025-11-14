@@ -34,6 +34,7 @@
 ## Installation
 
 1. **Clone the repository**
-```bash
-git clone https://github.com/<jayabalaji1011>/Hospital.git
-cd Hospital
+bash
+git clone https://github.com/jayabalaji1011/Hospital.git
+cd Hospital 
+
